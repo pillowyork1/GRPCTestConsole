@@ -11,8 +11,9 @@ namespace GRPCTestServer
         {
             Console.WriteLine("Iniciando GRPC Test Console");
             Console.WriteLine("Criando um server");
-            criandoServer();
-            Console.WriteLine("Server criado");
+            //criandoServer();
+            CriarOuPararServidor();
+            //Console.WriteLine("Server criado");         
         }
 
         public class GreeterService : Greeter.GreeterBase
@@ -28,7 +29,7 @@ namespace GRPCTestServer
             }
         }
 
-        static void criandoServer()
+        static void CriandoServer()
         {
             const int Port = 5000;
 
@@ -68,8 +69,51 @@ namespace GRPCTestServer
             }
         }
 
+        static void CriarOuPararServidor()
+        {
+            const int Port = 5000;
+            Server server = null;
+            bool servidorRodando = false;
 
-        async Task chamarSecurityListAsync(GrpcChannel channel)
+            while (true)
+            {
+                if (servidorRodando)
+                {                    
+                    // Parar o servidor
+                    Console.WriteLine("\nParando o servidor...");
+                    server.ShutdownAsync().Wait();
+                    Console.WriteLine("Servidor parado.");
+                    servidorRodando = false;
+                    Console.WriteLine("Pressione qualquer tecla para iniciar o servidor...");
+                    Console.ReadKey();
+                }
+                else
+                {
+                    // Iniciar o servidor
+                    try
+                    {                        
+                        server = new Server
+                        {
+                            Services = { Greeter.BindService(new GreeterService()) },
+                            Ports = { new ServerPort("localhost", Port, ServerCredentials.Insecure) }
+                        };
+                        server.Start();
+                        Console.WriteLine("Servidor gRPC iniciado e ouvindo na porta " + Port);
+                        servidorRodando = true;
+                        Console.WriteLine("Pressione qualquer tecla para parar o servidor...");
+                        Console.ReadKey();
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Erro ao iniciar o servidor: " + e.Message);
+                    }
+                }
+            }
+        }
+
+        async Task ChamarSecurityListAsync(GrpcChannel channel)
         {
             // Create a client for the MarketDataService
             var client = new MarketDataService.MarketDataServiceClient(channel);
