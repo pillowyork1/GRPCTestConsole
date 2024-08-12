@@ -1,0 +1,5 @@
+C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestConsole\obj\Debug\net8.0\GRPCTestConsole.csproj.AssemblyReference.cache
+C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestConsole\obj\Debug\net8.0\GRPCTestConsole.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestConsole\obj\Debug\net8.0\GRPCTestConsole.AssemblyInfoInputs.cache
+C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestConsole\obj\Debug\net8.0\GRPCTestConsole.AssemblyInfo.cs
+C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestConsole\obj\Debug\net8.0\GRPCTestConsole.csproj.CoreCompileInputs.cache

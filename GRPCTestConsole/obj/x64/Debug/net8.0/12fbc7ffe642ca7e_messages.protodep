@@ -1,0 +1,6 @@
+obj\x64\Debug\net8.0\Protos/Messages.cs \
+obj\x64\Debug\net8.0\Protos/MessagesGrpc.cs: C:/Users/Cecilia/.nuget/packages/grpc.tools/2.65.0/build/native/include/google/protobuf/timestamp.proto\
+ C:/Users/Cecilia/.nuget/packages/grpc.tools/2.65.0/build/native/include/google/protobuf/wrappers.proto\
+ Protos/customtypes.proto\
+ C:/Users/Cecilia/.nuget/packages/grpc.tools/2.65.0/build/native/include/google/protobuf/empty.proto\
+ Protos/messages.proto

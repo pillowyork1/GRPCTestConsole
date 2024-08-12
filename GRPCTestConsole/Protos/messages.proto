@@ -1,0 +1,773 @@
+syntax = "proto3";
+
+option csharp_namespace = "Proto.Messages";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "Protos/customtypes.proto";
+//import "google/protobuf/empty.proto";
+
+package Messages;
+
+service MarketDataService {
+	rpc GetSecurityList (SecurityListRequest) returns (stream SecurityListResponse);
+	rpc SubscribeTopMarketData (MarketDataTopRequest) returns (stream MarketDataTopResponse);
+	rpc SubscribeFullMarketData (MarketDataFullRequest) returns (stream MarketDataFullResponse);
+}
+
+service OrderRouterService {
+	rpc SendNewOrder (OrderRequest) returns (OrderResponse);
+	rpc CancelOrder (OrderRequest) returns (OrderCancelReplaceResponse);
+	rpc ModifyOrder (OrderRequest) returns (OrderCancelReplaceResponse);
+	rpc SubscribeOrderStatus (SubscribeOrderStatusRequest) returns (stream OrderStatusResponse);
+	rpc SendBasket (BasketRequest) returns (ProtoEmpty);
+}
+
+service DropCopyService {
+	rpc GetAllTrades (AllTradesFilterRequest) returns (stream AllTradesResponse);
+	rpc SubscribeOrderStatus (SubscribeOrderStatusRequest) returns (stream OrderResponse);
+}
+
+service BlotterService {
+	rpc GetHistoricalBlotterItems (AllTradesFilterRequest) returns (stream BlotterMessage);
+	rpc GetAllBlotterItems (BlotterLiveSubscribe) returns (stream BlotterMessage);
+	rpc GetTimeAndSales (TimeAndSalesSubscribe) returns (stream TimeAndSales);
+	rpc GetActivities (ProtoEmpty) returns (stream Activity);
+}
+
+service StrategyService {
+	rpc CreateStrategy (StrategyCreateRequest) returns (StrategyCRUDResponse);
+	rpc RetrieveStrategies (StrategyEmpty) returns (StrategyRetrieveResponse);
+	rpc UpdateStrategy (StrategyGRPC) returns (StrategyCRUDResponse);
+	rpc CancelStrategy (StrategyGUIDRequest) returns (StrategyCRUDResponse);
+	rpc StartStrategy (StrategyGUIDRequest) returns (StrategyStatusResponse);
+	rpc StopStrategy (StrategyGUIDRequest) returns (StrategyStatusResponse);
+	rpc SubscribeStrategyChange (SubscribeStrategyStatusRequest) returns (stream StrategySubscribeResponse);
+}
+
+service VoiceService {
+	rpc ListVoices (ListVoiceRequest) returns (ListVoiceResponse);	
+	rpc GetVoice (VoiceDefaultRequest) returns (VoiceDefaultResponse);
+	rpc InsertVoice(InsertVoiceRequest) returns (InsertVoiceResponse);
+	rpc Accept(VoiceDefaultRequest) returns (VoiceDefaultResponse);
+	rpc Reject(VoiceDefaultRequest) returns (VoiceDefaultResponse);
+	rpc RequestCancel(VoiceCancelRequest) returns (stream VoiceDefaultResponse);
+	rpc AcceptCancel(VoiceDefaultRequest) returns (VoiceDefaultResponse);
+	rpc RejectCancel(VoiceDefaultRequest) returns (VoiceDefaultResponse);
+	rpc RejectCancelB3(VoiceDefaultRequest) returns (VoiceDefaultResponse);
+	rpc AcceptCancelB3(VoiceDefaultRequest) returns (VoiceDefaultResponse);
+	rpc ListenVoiceAlerts(VoiceAlertRequest) returns (stream VoiceDefaultResponse);
+	rpc GetVoiceDesks (ProtoEmpty) returns (GetVoiceDesksResponse);	
+	rpc GetVoiceUsers (ProtoEmpty) returns (GetVoiceUsersResponse);	
+}
+
+service SlimCalcService 
+{
+	rpc GetQuotation(QuotationRequest) returns (QuotationResponse);	
+}
+
+message ProtoEmpty {}
+
+enum OrderSide{
+	BUY = 0;
+	SELL = 1;
+	VOICE = 2;
+}
+
+enum OrderStatus {
+    Live							   = 0;
+    LiveAndPartiallyExecuted		   = 1;
+    TotallyFilled					   = 2;
+    CanceledWithExecutedQuantity       = 3;
+	Rejected						   = 4;
+    Canceled				           = 5;
+    PendingCancel					   = 6;
+    PendingNew						   = 7;
+    PendingReplace					   = 8;
+}
+
+enum TimeInForce {
+	Day = 0;
+	LiquiditySeeking = 1;
+}
+
+enum ExecType {
+	New = 0;
+    Replace = 1;
+    Cancel = 2;
+    Trade = 3;
+    Reject = 4;
+    Restated = 5;
+	Pending_New = 6;
+	Pending_Replace = 7;
+	Pending_Cancel = 8;
+}
+
+message SubscribeOrderStatusRequest {
+	int32 TraderID = 1;
+	bool EnabledCancelOnDisconnect = 2;
+	int32 CancelOnDisconnectThreshold = 3;
+}
+
+message BasketRequest {
+	int32 UserID = 1;
+	repeated OrderRequest Basket = 2;
+}
+
+message OrderRequest {
+	int32 DeskID = 1;
+	string Ticker = 2;
+	bool HasBrokerID = 3;
+	int32 BrokerID = 4;
+	OrderSide Side = 5;
+	customTypes.DecimalValue Quantity = 6;
+	customTypes.DecimalValue Price = 7;
+	int32 UserID = 8;
+	string ClientOrderID = 9;
+	string OriginalClientOrderID = 10;
+	string Account = 11;
+	bool HasMaxFloor = 12;
+	customTypes.DecimalValue MaxFloor = 13;
+	int32 SecurityID = 14;
+	string TraderMneomonic = 15;
+	string SubDesk = 16;
+	string Memo = 17;
+	TimeInForce TimeInForce = 18;
+}
+message OrderResponse {
+	string Symbol = 1;
+	OrderSide Side = 2;
+	customTypes.DecimalValue Quantity = 3;
+	google.protobuf.Timestamp  TransactTime = 4;
+	string ClientOrderID = 5;
+	string OriginalClientOrderID = 6;
+	optional int64 OrderID = 7;
+	customTypes.DecimalValue LastFillPrice = 8;
+	OrderStatus Status = 9;
+	customTypes.DecimalValue Price = 10;
+	int32 SecurityID = 11;
+	string TradeID = 12;
+	string Text = 13;
+	customTypes.DecimalValue FilledQuantity = 14;
+	customTypes.DecimalValue MaxFloor = 15;
+	string Account = 16;
+	customTypes.DecimalValue LiveQuantity = 17;
+	int32 EnteringTrader = 18;
+	string EnteringTraderName = 19;
+	int32 EnteringDeskId = 20;
+	string EnteringDeskName = 21;
+	optional int32 ExecutingDeskId = 22;
+	optional string ExecutingDeskName = 23;
+	optional int32 ExecutingFirmId = 24;
+	optional string ExecutingFirmName = 25;
+	optional string FutureHedgeSymbol = 26;
+	optional customTypes.DecimalValue FutureHedgePrice = 27;
+	optional customTypes.DecimalValue FutureHedgeQuantity = 28;
+	optional string FutureHedgeUniqueTradeId = 29;
+	optional google.protobuf.Timestamp FutureHedgeTradeTime = 30;
+	customTypes.DecimalValue AvgPx = 31;
+	customTypes.DecimalValue LastQty = 32;
+	optional int64 SecondaryOrderID = 33;
+	google.protobuf.Timestamp  LastUpdateTime = 34;
+	string TraderMneomonic = 35;
+	google.protobuf.Timestamp  CreatedTime = 36;
+	string SubDesk = 37;
+	string Memo = 38;
+	TimeInForce TimeInForce = 39;
+	ExecType ExecType = 40;
+	optional customTypes.DecimalValue Price2 = 41;
+}
+
+message OrderCancelReplaceResponse {
+
+}
+
+message SecurityListRequest {}
+message SecurityListResponse {
+	string Ticker = 1;
+	string ShortName = 2;
+	string Indexer = 3;
+	int32 Coupon = 4;
+	google.protobuf.Timestamp Maturity = 5;
+	string SelicID = 6;
+	string ISIN = 7;
+	string CUSIP = 8;
+	string Segment = 9;
+	string Market = 10;
+	string Sector = 11;
+	string Convection = 12;
+	bool Tradable = 13;
+	bool RFQAvailable = 14;
+	bool VoiceAvailable = 15;
+	bool TradeStandardLots = 16;
+	bool TradeOddLots = 17;
+	bool IsStructured = 18;
+	customTypes.DecimalValue ReferenciaPrice = 19;
+	customTypes.DecimalValue ReferenciaIR = 20;
+	int32 SecurityID = 21;
+	customTypes.DecimalValue LotQuantity = 22;
+	customTypes.DecimalValue MaxQuantity = 23;
+	customTypes.DecimalValue IcebergDisplayQuantity = 24;
+	customTypes.DecimalValue RejectionPriceRange = 25;
+	string Asset = 26;
+	customTypes.DecimalValue MinPriceIncrement = 27;
+	bool IsLastItem = 28;
+	int32 ProductId = 29;
+	int32 PricingTypeId = 30;
+	int32 CalcTypeId = 31;
+}
+
+
+message Quote 
+{
+	customTypes.DecimalValue Quantity = 1;
+	customTypes.DecimalValue Price = 2;
+	customTypes.DecimalValue InterestRate = 3;
+	string Participant = 4;
+	google.protobuf.Timestamp EntryDateTime = 5;
+	int64 OrderID = 6;
+	bool IsBroker = 7;
+}
+
+message TradeMsg 
+{
+	google.protobuf.Timestamp EntryDateTime = 1;
+	customTypes.DecimalValue Quantity = 2;
+	customTypes.DecimalValue Price = 3;
+	int64 TradeID = 4;
+	string Buyer = 5;
+	string Seller = 6;
+	customTypes.DecimalValue NetChangePrevDay = 7;
+	customTypes.DecimalValue InterestRate = 8;
+}
+
+message MarketDataTopRequest
+{
+	string TraderID = 1; 
+}
+
+message TopMarketDataResponse
+{
+	string Symbol = 1;
+	optional Quote BestBid = 2;
+	optional Quote BestAsk = 3;
+	optional TradeMsg LastTrade = 4; 
+	BookStatus Status = 5;
+	string Asset = 6; //added
+	customTypes.DecimalValue DecimalPlaces = 7; //added
+}
+
+message BookStatus 
+{
+	customTypes.DecimalValue LastQuantity = 1;
+	customTypes.DecimalValue LastPrice = 2;
+	customTypes.DecimalValue NetChangePrevDay = 3;
+	google.protobuf.Timestamp TimeLastTrade = 4;
+	customTypes.DecimalValue TradedVolume = 5;
+	int64 NumberOfTrades = 6;
+	string Status = 7;
+	customTypes.DecimalValue MaxPrice = 8;
+    customTypes.DecimalValue MinPrice = 9;
+    customTypes.DecimalValue OpeningPrice = 10;
+    customTypes.DecimalValue ClosingPrice = 11;
+    customTypes.DecimalValue VWAP = 12;
+	customTypes.DecimalValue RejectionBandMinPrice = 13;
+	customTypes.DecimalValue RejectionBandMaxPrice = 14;
+	customTypes.DecimalValue AuctionBandMinPrice = 15;
+	customTypes.DecimalValue AuctionBandMaxPrice = 16;
+	customTypes.DecimalValue HardLimitBandMinPrice = 17;
+	customTypes.DecimalValue HardLimitBandMaxPrice = 18;
+	customTypes.DecimalValue TheoreticalPrice = 19;
+	customTypes.DecimalValue TheoreticalVolume = 20;
+	customTypes.DecimalValue Imbalance = 21;
+	google.protobuf.Timestamp TradSesOpenTime = 22;
+
+	customTypes.DecimalValue MaxInterestRate = 23;
+    customTypes.DecimalValue MinInterestRate = 24;
+    customTypes.DecimalValue OpeningInterestRate = 25;
+    customTypes.DecimalValue ClosingInterestRate = 26;
+	customTypes.DecimalValue LastInterestRate = 27;
+	customTypes.DecimalValue VWAPInterestRate = 28;
+	customTypes.DecimalValue TheoreticalInterestRate = 29;
+
+	customTypes.DecimalValue PreviousClose = 30;                // added - MSS
+	customTypes.DecimalValue Settlement = 31;                   // added - MSS
+	google.protobuf.Timestamp SettlementEntryTime = 32;         // added - MSS
+	customTypes.DecimalValue SettlementPrevious = 33;           // added - MSS
+	google.protobuf.Timestamp SettlementPreviousEntryTime = 34; // added - MSS
+	customTypes.DecimalValue SettlementUnitPrice = 35;          // added - MSS
+	customTypes.DecimalValue SettlementUnitPricePrevious = 36;  // added - MSS
+}
+
+message MarketDataFullRequest{	
+	string Symbol = 1;
+	string SubscriptionId = 2;
+}
+message FullMarketDataResponse{
+	string Symbol = 1;
+	repeated Quote Bids = 2;
+	repeated Quote Asks = 3;
+	BookStatus Status = 4;
+	optional TradeMsg Trade = 5; 
+}
+
+message AllTradesFilterRequest{
+	int32 DeskId = 1;
+	int32 SecurityId = 2;
+	google.protobuf.Timestamp StartDate = 3;
+	google.protobuf.Timestamp EndDate = 4;
+	int32 UserID = 5;
+}
+
+message BlotterLiveSubscribe{
+	int32 UserID = 1;
+}
+
+message AllTradesResponse {
+	google.protobuf.Timestamp Data = 1;
+    string Ticker = 2;
+    customTypes.DecimalValue Preco = 3;
+    customTypes.DecimalValue Taxa = 4;
+	int32 QtdeNegociada = 5;
+	int32 QtdeDICasada = 6;
+	string ISIN = 7;
+	string InstituicaoComprador = 8;
+	string InstituicaoVendedor = 9;
+	string MensagemCompraRTC = 10;
+	int32 NumeroNegocio = 11;
+	customTypes.DecimalValue Montante = 12;
+	string TipoDeOrigemNegocio = 13;
+	string UsuarioComprador = 14;
+	string UsuarioVendedor = 15;
+	string DeskComprador = 16;
+	string DeskVendedor = 17;
+	string OrigemComprador = 18;
+	string OrigemVendedor = 19;
+	string Maturity = 20;
+	string TipoDeOrigemDoNegocio=21;
+	string MensagemVendaRTC = 22;
+}
+
+message BlotterMessage {
+	google.protobuf.Timestamp TradeDate = 1;
+	int32 SecurityId = 2;
+	bool Intermediated = 3;
+	customTypes.DecimalValue Pu = 4;
+	customTypes.DecimalValue InterestRate = 5;
+	customTypes.DecimalValue Quantity = 6;
+	customTypes.DecimalValue TradeAmount = 7;
+	int64 Master_Trade_Id = 8;
+	int64 BlotterTradeId = 9;
+	string SettlementType = 10;
+	int32 BuyerDeskId = 11;
+	string BuyerDeskName = 12;
+	int32 BuyerTraderId = 13;
+	string BuyerTraderName = 14;
+	int32 SellerDeskId = 15;
+	string SellerDeskName = 16;
+	int32 SellerTraderId = 17;
+	string SellerTraderName = 18;
+	string BuyerStpStatus = 19;
+	string SellerStpStatus = 20;
+	int32 Id = 21;
+	string Ticker = 22;
+	customTypes.DecimalValue IntermediationFee = 23;
+    customTypes.DecimalValue InterestRateWithFee = 24;
+    customTypes.DecimalValue PUWithFee = 25;
+    customTypes.DecimalValue TradeAmountWithFee = 26;
+    bool HasBeenCalculated = 27;
+	bool IsCancelled = 28;
+	google.protobuf.Timestamp TradeTime = 29;
+	string BuyerInstituion = 30;
+	string SellerInstituion = 31;
+	string AgressiveOrder = 32;
+	string LastUserModify = 33;
+	string TypeDescription  = 34;
+	string BuyerSourceDescription = 35;
+	string SellerSourceDescription = 36;
+	google.protobuf.Timestamp SettlementDate = 37;
+	int32 HedgeQuantity = 38;
+    customTypes.DecimalValue HedgePrice = 39;
+    string HedgeSymbol = 40;
+    google.protobuf.Timestamp HedgeTradeTime = 41;
+    string HedgeOrderId = 42;
+	bool IsAuction = 43;
+	google.protobuf.Timestamp SysStartTime = 44;
+	google.protobuf.StringValue RtcStatus = 45;
+	google.protobuf.StringValue Reason = 46;
+	string ShortName = 47;
+    google.protobuf.Timestamp Maturity = 48;
+	bool HasSpread = 49;
+	customTypes.DecimalValue Spread = 50;
+	google.protobuf.Int32Value SecaId = 51; // Int32Value instead of int32 because it should support null values (int?)
+	string HedgeBrokerCodeBuyer = 52;
+	string HedgeTraderCodeBuyer = 53;
+	string HedgeBrokerCodeSeller = 54;
+	string HedgeTraderCodeSeller = 55;
+}
+message TimeAndSalesSubscribe {
+	int32 SecurityID = 1;
+}
+
+message TimeAndSales {
+	string Ticker = 1;
+	google.protobuf.Timestamp TradeTime = 2;
+	customTypes.DecimalValue PU = 3;
+	customTypes.DecimalValue Rate = 4;
+	customTypes.DecimalValue Quantity = 5;
+	customTypes.DecimalValue Amount = 6;
+	string Source = 7;
+	string TradeCondition = 8;
+	string TickDirection = 9;
+	string AgressiveOrder = 10;
+	int64 TradeID = 11;
+	bool IsCancelled = 12;
+	string TypeDescription = 13;
+	int32 IdTradingType = 14;
+	bool IsAuction = 15;
+}
+
+message Activity {
+	string Ticker = 1;
+	google.protobuf.Timestamp TradeTime = 2;
+	customTypes.DecimalValue PU = 3;
+	customTypes.DecimalValue Rate = 4;
+	customTypes.DecimalValue Quantity = 5;
+	customTypes.DecimalValue Amount = 6;
+	string Source = 7;
+	string TradeCondition = 8;
+	string TickDirection = 9;
+	string AgressiveOrder = 10;
+	int64 TradeID = 11;
+	bool IsCancelled = 12;
+	string TypeDescription = 13;
+	int32 IdTradingType = 14;
+	bool IsAuction = 15;
+}
+
+message MarketDataFullResponse 
+{
+	int32 messageIndex = 1;
+	optional FullMarketDataResponse FullMarketDataResult = 2;
+}
+
+message MarketDataTopResponse 
+{
+	int32 messageIndex = 1;
+	optional TopMarketDataResponse TopMarketDataResult = 2;
+}
+
+message OrderStatusResponse 
+{
+	int32 messageIndex = 1;
+	optional OrderResponse OrderResult = 2;
+}
+
+//// ----< Strategy >---- ////
+enum StrategyType
+{
+	UnknownType = 0;
+	UnusedType = 1;
+	MarketMakerFixedRate = 2;
+	MarketMakerIndexed = 3;
+}
+
+enum StrategyCalcType
+{
+	NotUsed = 0;
+    Mid = 1;
+    Ask = 2;
+    Bid = 3;
+	LastPrice = 4;
+    Manual = 5;
+}
+
+enum StrategyStatus
+{
+	Unknown = 0;
+	PendingStart = 1;
+	Started = 2;
+	PendingStop = 3;
+	Stopped = 4;
+}
+
+enum StrategyCRUDStatus
+{
+	UnknownStrategy = 0;
+	StrategyPendingCreate = 1;
+	StrategyCreated = 2;
+	StrategyPendingUpdate = 3;
+	StrategyUpdated = 4;
+	StrategyPendingCancel = 5;
+	StrategyCanceled = 6;
+	CouldNotCreateStrategy = 7;
+	CouldNotUpdateStrategy = 8;
+	CouldNotCancelStrategy = 9;
+}
+
+enum StrategyStopTriggerType
+{
+	Disabled = 0;
+	LastFairPrice = 1;
+	StartFairPrice = 2;
+	ReferenceClose = 3;
+	ReferenceLastPrice = 4;
+}
+
+message StrategyEmpty {}
+
+message StrategyGRPC {
+	optional string StrategyID = 1;
+	string GUID = 2; // UUID
+	int32 DeskID = 3;
+	int32 TraderID = 4;
+	int32 SecurityID = 5;
+	string Security = 6;
+	StrategyCalcType ReferenceCalcType1 = 7;
+	string Reference = 8;
+	customTypes.DecimalValue ReferenceManualValue = 9;
+	StrategyCalcType CasadaCalcType1 = 10;
+	string Casada = 11;
+	customTypes.DecimalValue CasadaManualValue = 12;
+	int32 Spread = 13;
+	int32 Bias = 14;
+	int32 BuyQuantity = 15;
+	int32 SellQuantity = 16;
+	optional int32 BuyMaxQuantity = 17;
+	optional int32 SellMaxQuantity = 18;
+	optional string Memo = 19;
+	optional StrategyStatus Status = 20;
+	StrategyCRUDStatus StatusCRUD = 21;
+	StrategyType StrategyType = 22;
+	optional string RejectionMessage = 23;
+	customTypes.DecimalValue Beta = 24;
+	StrategyStopTriggerType StopTriggerType = 25;
+	customTypes.DecimalValue StopTriggerValue = 26;
+	StrategyCalcType ReferenceCalcType2 = 27;
+	StrategyCalcType ReferenceCalcType3 = 28;
+	StrategyCalcType CasadaCalcType2 = 29;
+	StrategyCalcType CasadaCalcType3 = 30;
+}
+
+message StrategyCreateRequest {
+	int32 DeskID = 2;
+	int32 TraderID = 3;
+	int32 SecurityID = 4;
+	string Security = 5;
+	StrategyCalcType ReferenceCalcType1 = 6;
+	string Reference = 7;
+	customTypes.DecimalValue ReferenceManualValue = 8;
+	StrategyCalcType CasadaCalcType1 = 9;
+	string Casada = 10;
+	customTypes.DecimalValue CasadaManualValue = 11;
+	int32 Spread = 12;
+	int32 Bias = 13;
+	int32 BuyQuantity = 14;
+	int32 SellQuantity = 15;
+	optional int32 BuyMaxQuantity = 16;
+	optional int32 SellMaxQuantity = 17;
+	optional string Memo = 18;
+	StrategyType StrategyType = 19;
+	customTypes.DecimalValue Beta = 20;
+	StrategyStopTriggerType StopTriggerType = 21;
+	customTypes.DecimalValue StopTriggerValue = 22;
+	StrategyCalcType ReferenceCalcType2 = 23;
+	StrategyCalcType ReferenceCalcType3 = 24;
+	StrategyCalcType CasadaCalcType2 = 25;
+	StrategyCalcType CasadaCalcType3 = 26;
+}
+
+message StrategyCRUDResponse {
+	string GUID = 1;
+	StrategyCRUDStatus Status = 2;
+}
+
+message StrategyRetrieveResponse {
+	repeated StrategyGRPC Strategies = 1;
+}
+
+message StrategyGUIDRequest {
+	string GUID = 1;
+}
+
+
+message SubscribeStrategyStatusRequest {
+	int32 TraderID = 1;
+}
+
+message StrategyStatusResponse {
+	string GUID = 1;
+	StrategyStatus Status = 2;
+}
+
+message StrategySubscribeResponse {
+	int32 MessageIndex = 1;
+	optional StrategyGRPC strategy = 2;
+}
+
+//// ----< End-Strategy >---- ////
+
+message ListVoiceRequest
+{
+	google.protobuf.Timestamp StartDateTime = 1;
+	google.protobuf.Timestamp EndDateTime = 2;
+}
+
+message ListVoiceResponse 
+{
+	bool IsSuccess				= 1;
+	string ResponseMessage		= 2;
+	repeated VoiceOrder Voices	= 3;
+}
+
+message InsertVoiceRequest {
+	VoiceOrder Voice1 = 1;
+	VoiceOrder Voice2 = 2;
+	bool IsCrossVoice = 3;
+	bool IsFoundsPass = 4;
+}
+
+message InsertVoiceResponse {
+	bool IsSuccess			= 1;
+	string ResponseMessage	= 2;
+	VoiceOrder Voice1		= 3;
+	VoiceOrder Voice2		= 4;
+	bool IsCrossVoice		= 5;
+	bool IsFoundsPass		= 6;
+	
+}
+
+message VoiceCancelRequest {
+	repeated int32 VoiceIds = 1;
+	google.protobuf.Int32Value CreatedByB3Id = 2;
+	string CrossId =3;
+	google.protobuf.StringValue Reason = 4;
+}
+
+message VoiceAlertRequest
+{
+	int32 UserId = 1;	
+}
+
+message VoiceDefaultRequest 
+{
+	VoiceOrder Voice = 1;
+}
+
+message VoiceDefaultResponse 
+{
+	bool IsSuccess			= 1;
+	string ResponseMessage	= 2;
+	VoiceOrder Voice		= 3;
+}
+
+message VoiceOrder 
+{
+	int32 VoiceOrderId					= 1;
+	int32 VoiceOrderStatusId			= 2;
+	string VoiceOrderStatusCode         = 3;
+	string VoiceOrderStatusDescription  = 4;
+	int32 SecurityId					= 5;
+	string Ticker                       = 6;
+	string SecurityName                 = 7;
+	int32 OperationTypeId				= 8;
+	string OperationTypeCode			= 9;
+	string OperationTypeDescription		= 10;
+	int32 BuyerInstitutionId			= 11;
+	string BuyerInstitutionName			= 12;
+	int32 BuyerDeskId					= 13;
+	string BuyerDeskName                = 14;
+	int32 BuyerUserId					= 15;
+	string BuyerUserName                = 16;
+	int32 SellerInstitutionId			= 17;
+	string SellerInstitutionName        = 18;
+	int32 SellerDeskId					= 19;
+	string SellerDeskName               = 20;
+	int32 SellerUserId					= 21;
+	string SellerUserName				= 22;	
+	int32 SettlementModelId				= 23;
+	string SettlementModelCode			= 24;
+	string SettlementModelDescription	= 25;
+	int32 SettlementModelDaysAdd		= 26;
+	google.protobuf.StringValue RejectReason	= 27;
+	customTypes.DecimalValue Quantity			= 28;
+	customTypes.DecimalValue Tax				= 29;
+	customTypes.DecimalValue Price				= 30;
+	customTypes.DecimalValue Total				= 31;
+	int32 ToBeApprovedById						= 32;
+	string ToBeApprovedByName					= 33;                                                                                                                                 
+	google.protobuf.Int32Value ApprovedRejectedById		= 34;
+	google.protobuf.StringValue ApprovedRejectedByName	= 35;
+	int32 CreatedById									= 36;
+	string CreatedByName								= 37;
+	google.protobuf.Int32Value ModifiedById				= 38;
+	google.protobuf.StringValue ModifiedByName			= 39;
+	google.protobuf.Int32Value CreatedByB3Id			= 40;
+	google.protobuf.StringValue CreatedByB3Name			= 41;
+	google.protobuf.Int32Value ApprovedRejectedByB3Id	= 42;	
+	google.protobuf.StringValue ApprovedRejectedByB3Name= 43;	
+	google.protobuf.Timestamp SettlementDate			= 44;
+	google.protobuf.Timestamp ApprovedRejectedTime		= 45;
+	google.protobuf.Timestamp ExpiredTime				= 46;
+	google.protobuf.Timestamp CreatedTime				= 47;		
+	google.protobuf.Timestamp SysStartTime				= 48;
+	google.protobuf.Timestamp SysEndTime				= 49;
+	string CrossId										= 50;
+	int32 TradingTypeId									= 51;	
+	int32 DeskToNotify									= 52;
+	bool B3Notify										= 53;
+	bool IsError										= 54;
+	google.protobuf.Int32Value CancelCreatedById						= 55;
+	google.protobuf.StringValue CancelCreatedByName						= 56;
+    google.protobuf.Int32Value CancelCounterpartyToBeApprovedById		= 57;
+    google.protobuf.StringValue CancelCounterpartyToBeApprovedByName	= 58;
+    google.protobuf.Int32Value CancelCounterpartyApprovedRejectedById	= 59;
+    google.protobuf.StringValue CancelCounterpartyApprovedRejectedByName = 60;
+    google.protobuf.Timestamp CancelCounterpartyApprovedRejectedTime	= 61;
+    google.protobuf.Int32Value CancelB3ApprovedRejectedById				= 62;
+    google.protobuf.StringValue CancelB3ApprovedRejectedByName			= 63;
+    google.protobuf.Timestamp CancelB3ApprovedRejectedByTime			= 64;
+}
+
+message QuotationRequest 
+{
+	int32 SecurityId				= 1;
+	int32 PricingTypeId				= 2;
+	customTypes.DecimalValue Tax	= 3;
+	customTypes.DecimalValue Price	= 4;
+}
+
+message QuotationResponse
+{
+	bool IsSuccess									= 1;
+	google.protobuf.StringValue ResponseMessage		= 2;
+	customTypes.DecimalValue Tax					= 3;
+	customTypes.DecimalValue Price					= 4;
+}
+
+message GetVoiceDesksResponse
+{
+	bool IsSuccess				= 1;
+	string ResponseMessage		= 2;
+	repeated VoiceDesk Desks	= 3;
+}
+
+message VoiceDesk
+{
+	int32 DeskId = 1;
+	string Name = 2;
+}
+
+message GetVoiceUsersResponse
+{
+	bool IsSuccess				= 1;
+	string ResponseMessage		= 2;
+	repeated VoiceUser Users	= 3;
+}
+
+message VoiceUser
+{
+	int32 UserId = 1;
+	string Login = 2;
+}
+
