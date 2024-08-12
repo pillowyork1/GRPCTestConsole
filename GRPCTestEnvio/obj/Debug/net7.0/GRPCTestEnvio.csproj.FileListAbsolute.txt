@@ -1,5 +1,0 @@
-C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestEnvio\obj\Debug\net7.0\GRPCTestEnvio.csproj.AssemblyReference.cache
-C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestEnvio\obj\Debug\net7.0\GRPCTestEnvio.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestEnvio\obj\Debug\net7.0\GRPCTestEnvio.AssemblyInfoInputs.cache
-C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestEnvio\obj\Debug\net7.0\GRPCTestEnvio.AssemblyInfo.cs
-C:\Users\Cecilia\Source\Repos\GRPCTestConsole\GRPCTestEnvio\obj\Debug\net7.0\GRPCTestEnvio.csproj.CoreCompileInputs.cache
